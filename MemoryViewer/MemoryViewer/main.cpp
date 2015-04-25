@@ -1,9 +1,15 @@
 ﻿// Автор: Николай Фролов.
 
-#include <ProccessInfoFinder.h>
+#include <ProcessInfoFinder.h>
+#include <fstream>
 
-int main() {
+int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+{
 	int pId = 100;
-	CProccessInfo info = CProccessInfoFinder::FindProccessInfo( pId );
+	TProcessInfo info = CProcessInfoFinder::FindProcessInfo( ::GetCurrentProcessId() );
+	std::ofstream output( "output" );
+	for( auto& piece : info ) {
+		output << piece.RegionBaseAddress << " " << piece.RegionSize << std::endl;
+	}
 	return 0;
 }
