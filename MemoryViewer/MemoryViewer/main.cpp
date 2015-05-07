@@ -1,15 +1,20 @@
 ﻿// Автор: Николай Фролов.
 
 #include <ProcessInfoFinder.h>
+#include <MainWindow.h>
+
 #include <fstream>
 
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+int _stdcall wWinMain( HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR commandLine, int nCmdShow )
 {
-	int pId = 100;
-	TProcessInfo info = CProcessInfoFinder::FindProcessInfo( ::GetCurrentProcessId() );
-	std::ofstream output( "output" );
-	for( auto& piece : info ) {
-		output << piece.RegionBaseAddress << " " << piece.RegionSize << std::endl;
-	}
+	CMainWindow::RegisterClass();
+    CMainWindow mainWindow;
+    mainWindow.Create();
+    mainWindow.Show( nCmdShow );
+    MSG msg;
+    while( ::GetMessage( &msg, 0, 0, 0 ) != 0 ) {
+        ::TranslateMessage( &msg );
+        ::DispatchMessage( &msg );
+    }
 	return 0;
 }

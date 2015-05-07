@@ -37,16 +37,14 @@ public:
 	std::vector<CBlockInfo> Blocks;
 };
 
-typedef std::vector<CRegionInfo> TProcessInfo;
+typedef std::vector<CRegionInfo> TProcessMemoryInfo;
 
 class CProcessInfoFinder {
 public:
 	// Получить информацию о регионах и блоках виртуального пространства процесса hProcess.
-	static TProcessInfo FindProcessInfo( int processId );
+	static TProcessMemoryInfo FindProcessInfo( int processId );
 private:
 	
-	// Размер грануляции.
-	static DWORD granulationSize;
 	// Проведена ли инициализация класса.
 	static bool isInitiated;
 

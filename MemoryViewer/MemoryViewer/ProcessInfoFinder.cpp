@@ -2,11 +2,9 @@
 
 #include <ProcessInfoFinder.h>
 
-DWORD CProcessInfoFinder::granulationSize = 0;
-
 bool CProcessInfoFinder::isInitiated = false;
 
-TProcessInfo CProcessInfoFinder::FindProcessInfo( int processId )
+TProcessMemoryInfo CProcessInfoFinder::FindProcessInfo( int processId )
 {
 	if( !isInitiated && !initiate() ) {
 		throw std::runtime_error( "Access denied." );
@@ -15,12 +13,12 @@ TProcessInfo CProcessInfoFinder::FindProcessInfo( int processId )
 	HANDLE processHandle = ::OpenProcess( PROCESS_QUERY_INFORMATION, false, processId );
 	if( processHandle == 0 ) {
 		// Процесс уже не работает, возвращаем пустой результат.
-		return TProcessInfo();
+		return TProcessMemoryInfo();
 	}
 
 	PVOID currentAddress = 0;
 	bool isNotFinished = true;
-	TProcessInfo result;
+	TProcessMemoryInfo result;
 	while( isNotFinished ) {
 		CRegionInfo tmpRegionInfo;
 		isNotFinished = findRegionInfo( processHandle, currentAddress, tmpRegionInfo );
@@ -37,11 +35,7 @@ bool CProcessInfoFinder::initiate()
 {
 	bool fuctionSucceed = true;
 
-	// Выставляем грануляцию.
-	SYSTEM_INFO systemInfo;
-	::GetSystemInfo( &systemInfo );
-	granulationSize = systemInfo.dwAllocationGranularity;
-
+	// Выставляем права.
 	HANDLE accessToken;
 	if( ::OpenProcessToken( ::GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &accessToken ) ) {
 		TOKEN_PRIVILEGES privileges;
@@ -56,6 +50,7 @@ bool CProcessInfoFinder::initiate()
 	return fuctionSucceed;
 }
 
+
 bool CProcessInfoFinder::findRegionInfo( HANDLE processHandle, PVOID address, CRegionInfo& regionInfo )
 {
 	MEMORY_BASIC_INFORMATION mbi;
@@ -63,12 +58,38 @@ bool CProcessInfoFinder::findRegionInfo( HANDLE processHandle, PVOID address, CR
 		return false;
 	}
 	regionInfo.RegionBaseAddress = mbi.BaseAddress;
-	regionInfo.RegionSize = mbi.RegionSize;
+	regionInfo.RegionSize = 0;
 	regionInfo.RegionProtection = mbi.AllocationProtect;
 	regionInfo.RegionTypeOfUsing = mbi.State;
 	if( mbi.State == MEM_FREE ) {
 		regionInfo.NumberOfGuardedBlocks = 0;
+		regionInfo.RegionSize = mbi.RegionSize;
 	} else {
+		PVOID blockAddress = mbi.AllocationBase;
+		while( true ) {
+			if( ::VirtualQueryEx( processHandle, blockAddress, &mbi, sizeof( mbi ) ) != sizeof( mbi ) ) {
+				// Не можем получить информацию о блоке.
+				break;
+			}
+			if( mbi.AllocationBase != regionInfo.RegionBaseAddress ) {
+				// Вышли за предел региона.
+				break;
+			}
+
+			CBlockInfo tmpBlockInfo;
+			tmpBlockInfo.BlockBaseAddress = mbi.BaseAddress;
+			tmpBlockInfo.BlockSize = mbi.RegionSize;
+			tmpBlockInfo.BlockTypeOfUsing = mbi.State;
+			if( mbi.State != MEM_FREE ) {
+				tmpBlockInfo.BlockProtection = mbi.Protect;
+			}
+			if( ( mbi.Protect & PAGE_GUARD ) == PAGE_GUARD ) {
+				++regionInfo.NumberOfGuardedBlocks;;
+			}
+			regionInfo.Blocks.push_back( tmpBlockInfo );
+			regionInfo.RegionSize += mbi.RegionSize;
+			blockAddress = reinterpret_cast<PVOID>( reinterpret_cast<PBYTE>( blockAddress ) + mbi.RegionSize );
+		}
 		// Итерация по блокам.
 		// ..
 	}

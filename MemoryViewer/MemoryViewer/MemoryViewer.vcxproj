@@ -69,11 +69,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Drawer.h" />
+    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ProcessInfoFinder.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Drawer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="ProcessInfoFinder.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MemoryViewer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
