@@ -25,7 +25,7 @@ bool CMainWindow::RegisterClass()
 bool CMainWindow::Create()
 {
     handle = ::CreateWindowEx( 0, L"CMainWindow", L"MemoryViewer", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VSCROLL 
-		| ES_AUTOVSCROLL | WS_HSCROLL | ES_AUTOHSCROLL,	0, 0, 640, 480, 0, 0,
+		| ES_AUTOVSCROLL | WS_HSCROLL | ES_AUTOHSCROLL,	0, 0, 433, 600, 0, 0,
 		static_cast<HINSTANCE>( ::GetModuleHandle( 0 ) ), this );
 
     return handle != 0;

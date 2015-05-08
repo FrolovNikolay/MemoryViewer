@@ -12,8 +12,8 @@
 
 class CMainWindow {
 public:
-	CMainWindow() : currentProcessId( -1 )
-	{ }
+	CMainWindow() : currentProcessId( ::GetCurrentProcessId() )
+	{ currentInfo = memoryInfoFinder.FindProcessInfo( currentProcessId ); }
 
 	// Регистрация класса окна.
     static bool RegisterClass();
