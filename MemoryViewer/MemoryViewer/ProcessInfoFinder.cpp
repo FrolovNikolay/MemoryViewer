@@ -54,10 +54,12 @@ bool CProcessInfoFinder::initiate()
 bool CProcessInfoFinder::findRegionInfo( HANDLE processHandle, PVOID address, CRegionInfo& regionInfo )
 {
 	MEMORY_BASIC_INFORMATION mbi;
-	if( ::VirtualQueryEx( processHandle, address, &mbi, sizeof( mbi ) ) != sizeof( mbi ) ) {
+	// Дальше нельзя - там ядро и функция выдает ерунду.
+	PVOID maxAddress = reinterpret_cast<PVOID>( 0x7ffe0000 );
+	if( address == maxAddress || ::VirtualQueryEx( processHandle, address, &mbi, sizeof( mbi ) ) != sizeof( mbi ) ) {
 		return false;
 	}
-	regionInfo.RegionBaseAddress = mbi.BaseAddress;
+	regionInfo.RegionBaseAddress = mbi.AllocationBase;
 	regionInfo.RegionSize = 0;
 	regionInfo.RegionProtection = mbi.AllocationProtect;
 	regionInfo.RegionTypeOfUsing = mbi.State;
@@ -65,13 +67,13 @@ bool CProcessInfoFinder::findRegionInfo( HANDLE processHandle, PVOID address, CR
 		regionInfo.NumberOfGuardedBlocks = 0;
 		regionInfo.RegionSize = mbi.RegionSize;
 	} else {
-		PVOID blockAddress = mbi.AllocationBase;
+		PVOID blockAddress = mbi.BaseAddress;
 		while( true ) {
 			if( ::VirtualQueryEx( processHandle, blockAddress, &mbi, sizeof( mbi ) ) != sizeof( mbi ) ) {
 				// Не можем получить информацию о блоке.
 				break;
 			}
-			if( mbi.AllocationBase != regionInfo.RegionBaseAddress ) {
+			if( mbi.AllocationBase != 0 && mbi.AllocationBase != regionInfo.RegionBaseAddress ) {
 				// Вышли за предел региона.
 				break;
 			}
@@ -90,8 +92,6 @@ bool CProcessInfoFinder::findRegionInfo( HANDLE processHandle, PVOID address, CR
 			regionInfo.RegionSize += mbi.RegionSize;
 			blockAddress = reinterpret_cast<PVOID>( reinterpret_cast<PBYTE>( blockAddress ) + mbi.RegionSize );
 		}
-		// Итерация по блокам.
-		// ..
 	}
 	return true;
 }

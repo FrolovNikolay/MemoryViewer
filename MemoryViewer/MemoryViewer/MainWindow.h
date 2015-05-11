@@ -12,8 +12,8 @@
 
 class CMainWindow {
 public:
-	CMainWindow() : currentProcessId( ::GetCurrentProcessId() )
-	{ currentInfo = memoryInfoFinder.FindProcessInfo( currentProcessId ); }
+	CMainWindow() : currentProcessId( -1 )
+	{ }
 
 	// Регистрация класса окна.
     static bool RegisterClass();
@@ -32,17 +32,32 @@ protected:
 	void OnNewPID();
 
 	void OnRefresh();
+
+	void OnVScroll( WPARAM wParam, LPARAM lParam ) const;
+
 private:
 	// Описатель данного окна.
     HWND handle;
+
+	HWND dialogHandle;
+
+	const static int width = 440;
+	const static int height = 600;
 
 	// ID процесса, память которого отображается в данный момент.
 	int currentProcessId;
 	TProcessMemoryInfo currentInfo;
 	// Механизм предоставляющий карту памяти процесса.
 	static CProcessInfoFinder memoryInfoFinder;
-	// Механизм отрисовки
+	// Механизм отрисовки.
 	static CDrawer drawer;
+	mutable int verticalScrollUnit;
+
+	void calculateCurrentScrollUnit() const;
+
+	void getPIDFromUser();
+
+	static BOOL CALLBACK lpDialogProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 	static LRESULT __stdcall wmCommandProc( HWND hanlde, UINT message, WPARAM wParam, LPARAM lParam );
 	static LRESULT __stdcall mainWindowProc( HWND hanlde, UINT message, WPARAM wParam, LPARAM lParam );

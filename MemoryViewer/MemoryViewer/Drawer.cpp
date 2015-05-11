@@ -10,7 +10,7 @@ int CDrawer::currentX = 0;
 
 int CDrawer::currentY = 0;
 
-void CDrawer::DrawMemoryInfoInWindow( const TProcessMemoryInfo& memoryInfo, HWND window )
+void CDrawer::DrawMemoryInfoInWindow( const TProcessMemoryInfo& memoryInfo, HWND window, int ScrollUnit )
 {
 	if( memoryInfo.empty() ) {
 		return;
@@ -27,7 +27,14 @@ void CDrawer::DrawMemoryInfoInWindow( const TProcessMemoryInfo& memoryInfo, HWND
 	HBITMAP tempBitmap = ::CreateCompatibleBitmap( displayHandle, width, height );
 	HBITMAP oldBitmap = static_cast<HBITMAP>( ::SelectObject( tempHDC, tempBitmap ) );
 	::Rectangle( tempHDC, 0, 0, width, height );
-	currentY = 0;
+
+	SCROLLINFO scrollInfo; 
+ 	::ZeroMemory( &scrollInfo, sizeof( SCROLLINFO ) ); 
+ 	scrollInfo.cbSize = sizeof( SCROLLINFO ); 
+ 	scrollInfo.fMask = SIF_ALL; 
+ 	::GetScrollInfo( window, SB_VERT, &scrollInfo ); 
+ 	currentY = - scrollInfo.nPos * ScrollUnit; 
+
 	currentX = 0;
 	drawHeader( tempHDC );
 	for( auto& region : memoryInfo ) {

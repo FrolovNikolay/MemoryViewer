@@ -10,7 +10,10 @@
 
 class CDrawer {
 public:
-	static void DrawMemoryInfoInWindow( const TProcessMemoryInfo& memoryInfo, HWND window );
+	static void DrawMemoryInfoInWindow( const TProcessMemoryInfo& memoryInfo, HWND window, int ScrollUnit );
+
+	static int GetFieldHeight() { return fieldHeight; }
+	static int GetFieldWidth() { return fieldWidth; }
 
 private:
 	static const int fieldHeight = 40;
