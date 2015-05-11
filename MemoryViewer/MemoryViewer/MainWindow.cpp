@@ -78,7 +78,7 @@ void CMainWindow::OnVScroll( WPARAM wParam, LPARAM lParam ) const
 		SCROLLINFO scrollInfo; 
 		scrollInfo.cbSize = sizeof( SCROLLINFO ); 
 		scrollInfo.fMask = SIF_ALL; 
-		// меняем позицию скролла 
+		// Меняем позицию скролла 
 		::GetScrollInfo( handle, SB_VERT, &scrollInfo ); 
  		switch( LOWORD( wParam ) ) { 
  		case SB_LINEUP: 
@@ -97,7 +97,7 @@ void CMainWindow::OnVScroll( WPARAM wParam, LPARAM lParam ) const
  			scrollInfo.nPos = scrollInfo.nTrackPos; 
  			break; 
  		} 
- 		// запоминаем и устанавливаем новую позицию скролла 
+ 		// Устанавливаем новую позицию скролла 
  		int scrollPosition = scrollInfo.nPos; 
  		scrollInfo.fMask = SIF_POS; 
  		::RedrawWindow( handle,  0, 0, RDW_INVALIDATE ); 
