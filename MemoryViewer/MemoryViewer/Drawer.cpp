@@ -99,7 +99,7 @@ void CDrawer::drawRegion( HDC hdc, const CRegionInfo& regionInfo )
 
 	str.str( std::wstring() );
 	str.clear();
-	str << std::hex << regionInfo.RegionProtection;
+	str << std::hex << protectionConverter( regionInfo.RegionProtection );
 	header = std::wstring( str.str() );
 	drawNextFieldInRow( hdc, header.data() );
 
@@ -119,6 +119,11 @@ void CDrawer::drawRegion( HDC hdc, const CRegionInfo& regionInfo )
 void CDrawer::drawBlock( HDC hdc, const CBlockInfo& blockInfo )
 {
 	currentX = 0;
+	::MoveToEx( hdc, currentX + 10, currentY, 0 );
+	::LineTo( hdc, currentX + 10, currentY + fieldHeight );
+	::MoveToEx( hdc, currentX + 10, currentY + fieldHeight / 2, 0 );
+	::LineTo( hdc, currentX + 20, currentY + fieldHeight / 2 );
+	currentX += 20;
 	drawNextFieldInRow( hdc, L"block" );
 	std::wstringstream str;
 
@@ -134,15 +139,32 @@ void CDrawer::drawBlock( HDC hdc, const CBlockInfo& blockInfo )
 
 	str.str( std::wstring() );
 	str.clear();
-	str << std::hex << blockInfo.BlockProtection;
-	header = std::wstring( str.str() );
-	drawNextFieldInRow( hdc, header.data() );
-
-	str.str( std::wstring() );
-	str.clear();
-	str << L"no";
+	str << std::hex << protectionConverter( blockInfo.BlockProtection );
 	header = std::wstring( str.str() );
 	drawNextFieldInRow( hdc, header.data() );
 
 	currentY += fieldHeight;
+}
+
+std::wstring CDrawer::protectionConverter( DWORD protection )
+{
+	switch( protection & ~( PAGE_GUARD | PAGE_NOCACHE | PAGE_WRITECOMBINE ) ) {
+		case PAGE_READONLY:          
+			return L"- R - -";
+		case PAGE_READWRITE:
+			return L"- R W -";
+		case PAGE_WRITECOPY:         
+			return L"- R W C";
+		case PAGE_EXECUTE:           
+			return L"E - - -";
+		case PAGE_EXECUTE_READ:      
+			return L"E R - -";
+		case PAGE_EXECUTE_READWRITE: 
+			return L"E R W -";
+		case PAGE_EXECUTE_WRITECOPY: 
+			return L"E R W C";
+		case PAGE_NOACCESS:          
+		default:
+			return L"- - - -";
+	}
 }

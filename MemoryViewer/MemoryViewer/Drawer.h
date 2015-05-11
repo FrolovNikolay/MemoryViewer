@@ -25,6 +25,8 @@ private:
 
 	static void drawNextFieldInRow( HDC hdc, const wchar_t* str );
 
+	static std::wstring protectionConverter( DWORD protection );
+
 	// Данные по отрисовке, которые необходимо передавать междуфункциями.
 	static int currentX;
 	static int currentY;
